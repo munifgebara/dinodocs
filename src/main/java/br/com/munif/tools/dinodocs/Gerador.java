@@ -15,6 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
@@ -26,85 +28,53 @@ public class Gerador {
 
     private static int exec = 0;
     private DinoProject dinoProject;
+    private static List<String> dots = new ArrayList<>();
 
     public Gerador(DinoProject dinoProject) {
         this.dinoProject = dinoProject;
-        Set<String> classFolders = new HashSet<>();
-        for (File classFolder : dinoProject.getClassFolders()) {
-            final Set<File> possilbeClassFIles = procuraArquivosRecursivamente(classFolder, "class");
-            for (File f : possilbeClassFIles) {
-                String absolutePath = f.getAbsolutePath();
-                String replaced = dinoProject.filtrosParaElementos.replaceAll("\\.", "/");
+        Set<String> classFolders = createClassLoader(dinoProject);
+        scanClasses(classFolders, dinoProject);
+        createPackagesDotFiles(dinoProject);
+        createAnotatedDotFiles(dinoProject);
+        generateSpecialClasses(dinoProject);
+        geraArquivoDeLoteShSvg();
 
-                int pos = absolutePath.indexOf(replaced);
-                if (pos >= 0) {
-                    classFolders.add(absolutePath.substring(0, pos));
-                }
+    }
+
+    private void generateSpecialClasses(DinoProject dinoProject1) {
+        for (String cc : dinoProject1.getInterestClasses()) {
+            try {
+                Class<?> loadClass = dinoProject1.classLoader.loadClass(cc);
+                geraParentes(loadClass, loadClass.getSimpleName());
+            }catch (ClassNotFoundException ex) {
+                System.out.println("Load class" + cc + " " + ex);
             }
         }
-        try {
-            final List<File> elements = new ArrayList<File>();
-            for (File jarFolder : dinoProject.getJarFolders()) {
-                elements.addAll(procuraArquivosRecursivamente(jarFolder, "jar"));
-            }
-            for (String ca : classFolders) {
-                elements.add(new File(ca));
-            }
-            URL[] runtimeUrls = new URL[elements.size()];
-            for (int i = 0; i < elements.size(); i++) {
-                URL url = elements.get(i).toURI().toURL();
-                runtimeUrls[i] = url;
-            }
-            this.dinoProject.classLoader = new URLClassLoader(runtimeUrls, Thread.currentThread().getContextClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    }
 
-        for (String classPath : classFolders) {
-            Set<File> classFiles = procuraArquivosRecursivamente(new File(classPath), "class");
-            for (File classFile : classFiles) {
+    private void createAnotatedDotFiles(DinoProject dinoProject1) {
+        for (Class anotacao : dinoProject1.getAnnotadeds().keySet()) {
+            for (Class c : dinoProject1.annotadeds.get(anotacao)) {
                 try {
-                    String nomeClasse = Util.transformaEmNomeDeClasse(classFile.getAbsolutePath(), classPath);
-                    if (nomeClasse.startsWith(dinoProject.filtrosParaElementos)) {
-                        Class clazz = dinoProject.classLoader.loadClass(nomeClasse);
-                        for (Class anotation : dinoProject.annotadeds.keySet()) {
-                            if (clazz.isAnnotationPresent(anotation)) {
-                                dinoProject.annotadeds.get(anotation).add(clazz);
-                            }
-                        }
-                        Package package1 = clazz.getPackage();
-                        if (!dinoProject.getPackages().containsKey(package1)) {
-                            dinoProject.getPackages().put(package1, new HashSet<Class>());
-                        }
-                        Set<Class> classes = dinoProject.getPackages().get(package1);
-                        classes.add(clazz);
-                    }
-
-                } catch (ClassNotFoundException e) {
-                    System.out.println(e.toString().replaceAll("/", "."));
-
-                } catch (NoClassDefFoundError e) {
-                    System.out.println(e.toString().replaceAll("/", "."));
-
+                    geraParentes(c, anotacao.getSimpleName());
+                } catch (Exception e) {
+                    System.out.println(c + ":" + e);
                 }
             }
-
         }
+    }
 
-        File destination = new File(dinoProject.getDestinationFolder()+"/"+dinoProject.name);
-        System.out.println("---->" + destination.getAbsolutePath());
-        destination.mkdirs();
-        for (Package p : dinoProject.packages.keySet()) {
+    private void createPackagesDotFiles(DinoProject dinoProject1) {
+        for (Package p : dinoProject1.packages.keySet()) {
             String pacote = p.getName();
             Set<String> associcaos = new HashSet<String>();
-            dinoProject.links.put(p, associcaos);
+            dinoProject1.links.put(p, associcaos);
             try {
-                File pacoteDot = new File(dinoProject.getDestinationFolder(), pacote.replaceAll("\\.", "_") + ".dot");
-                FileWriter fw = new FileWriter(pacoteDot, false);
+                FileWriter fw = createFileWriter(dinoProject1, pacote.replaceAll("\\.", "_") + ".dot", "packages");
                 escreveCabecalho(fw);
                 fw.write("subgraph cluster" + pacote.replaceAll("\\.", "_") + "\n{\n");
                 fw.write("label=\"" + pacote + "\";\n");
-                for (Class entidade : dinoProject.packages.get(p)) {
+                for (Class entidade : dinoProject1.packages.get(p)) {
                     associcaos.addAll(criaClasse(entidade, fw));
                 }
                 fw.write("}\n\n");
@@ -117,38 +87,77 @@ public class Gerador {
                 ex.printStackTrace();
             }
         }
-        
-        
+    }
 
-        
-        for (Class c : dinoProject.annotadeds.get(RestController.class)) {
-            try {
-                geraParentes(c);
-            } catch (Exception e) {
-                System.out.println(c + ":" + e);
+    private void scanClasses(Set<String> classFolders, DinoProject dinoProject1) {
+        for (String classPath : classFolders) {
+            Set<File> classFiles = procuraArquivosRecursivamente(new File(classPath), "class");
+            for (File classFile : classFiles) {
+                try {
+                    String nomeClasse = Util.transformaEmNomeDeClasse(classFile.getAbsolutePath(), classPath);
+                    if (nomeClasse.startsWith(dinoProject1.filtrosParaElementos)) {
+                        Class clazz = dinoProject1.classLoader.loadClass(nomeClasse);
+                        if (isClass(clazz)) {
+                            for (Class anotation : dinoProject1.annotadeds.keySet()) {
+                                if (clazz.isAnnotationPresent(anotation)) {
+                                    dinoProject1.annotadeds.get(anotation).add(clazz);
+                                }
+                            }
+                            Package package1 = clazz.getPackage();
+                            if (!dinoProject1.getPackages().containsKey(package1)) {
+                                dinoProject1.getPackages().put(package1, new HashSet<Class>());
+                            }
+                            Set<Class> classes = dinoProject1.getPackages().get(package1);
+                            classes.add(clazz);
+                        }
+                    }
+                } catch (ClassNotFoundException e) {
+                    System.out.println(e.toString().replaceAll("/", "."));
+
+                } catch (NoClassDefFoundError e) {
+                    System.out.println(e.toString().replaceAll("/", "."));
+
+                }
             }
         }
+    }
 
-        geraArquivoDeLoteShSvg();
+    private void dadosClass(Class clazz) {
+        System.out.println(clazz.getCanonicalName()
+                + " isAnnotation():" + clazz.isAnnotation()
+                + " isAnonymousClass():" + clazz.isAnonymousClass()
+                + " isArray():" + clazz.isArray()
+                + " isEnum():" + clazz.isEnum()
+                + " isInterface():" + clazz.isInterface()
+                + " isLocalClass():" + clazz.isLocalClass()
+                + " isMemberClass():" + clazz.isMemberClass()
+                + " isPrimitive():" + clazz.isPrimitive()
+                + " isSynthetic():" + clazz.isSynthetic()
+        );
+    }
+
+    private boolean isClass(Class clazz) {
+        return clazz.isAnnotation()
+                || clazz.isAnonymousClass()
+                || clazz.isArray()
+                || clazz.isEnum()
+                || clazz.isInterface()
+                || clazz.isLocalClass()
+                || clazz.isMemberClass()
+                || clazz.isPrimitive()
+                || clazz.isSynthetic();
 
     }
 
     public void geraArquivoDeLoteShSvg() {
         try {
-            File script = new File(dinoProject.getDestinationFolder(), "dot2svg" + (exec++ == 0 ? "" : "" + (exec)) + ".sh");
-            // System.out.println(script.getAbsolutePath());
+            File script = new File(dinoProject.getDestinationFolder() + "/" + dinoProject.name + "/", "dot2svg" + (exec++ == 0 ? "" : "" + (exec)) + ".sh");
+            System.out.println("-------------------------------------->" + script.getAbsolutePath());
             FileWriter fw = new FileWriter(script, false);
             script.setExecutable(true);
             fw.write("#!/bin/sh\n");
-            for (Package p : dinoProject.getPackages().keySet()) {
-                String pacote = p.getName();
-                fw.write("dot -T svg -o " + pacote.replaceAll("\\.", "_") + ".svg " + pacote.replaceAll("\\.", "_")
-                        + ".dot\n");
-            }
-            fw.write("\n");
-            for (Class c : dinoProject.annotadeds.get(RestController.class)) {
-                String nome = c.getSimpleName() + "Arround.dot";
-                fw.write("dot -T svg -o " + nome + ".svg " + nome + "\n");
+            for (String dot : dots) {
+                fw.write("dot -T svg -o " + dot + ".svg " + dot + "\n");
             }
             fw.write("\n");
             fw.close();
@@ -373,14 +382,16 @@ public class Gerador {
         }
     }
 
-    private void geraParentes(Class classe) {
+    private void geraParentes(Class classe, String pasta) {
         naoVisitados = new ArrayList<String>();
         parentes = new HashSet<Class>();
         naoVisitados.add(classe.getCanonicalName());
+        procuraRecursivo();
+
         List<String> associcaos = new ArrayList<String>();
         try {
             File pacoteDot = new File(dinoProject.getDestinationFolder(), classe.getSimpleName() + "Arround.dot");
-            FileWriter fw = new FileWriter(pacoteDot, false);
+            FileWriter fw = createFileWriter(dinoProject, classe.getSimpleName() + "Links.dot", pasta);
             escreveCabecalho(fw);
             fw.write("subgraph clusterentidades \n{\n");
             fw.write("label=\"" + classe.getSimpleName() + "\";\n");
@@ -401,9 +412,9 @@ public class Gerador {
     List<String> naoVisitados = new ArrayList<String>();
     Set<Class> parentes = new HashSet<Class>();
 
-    private void rocuraRecursivo() {
+    private void procuraRecursivo() {
         while (naoVisitados.size() > 0) {
-            System.out.println("Nao---->" + naoVisitados);
+            //System.out.println("Nao---->" + naoVisitados);
             String proxima = naoVisitados.remove(0);
             try {
                 Class clazz = dinoProject.classLoader.loadClass(proxima);
@@ -422,14 +433,13 @@ public class Gerador {
                         try {
                             tipoAtributo = (Class) typeArguments[f.getType().equals(Map.class) ? 1 : 0];
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println(" " + e);
                         }
                     }
                     addParente(tipoAtributo);
                 }
             } catch (Throwable t) {
                 System.out.println("----> problemas com " + proxima);
-                t.printStackTrace();
             }
         }
     }
@@ -442,6 +452,48 @@ public class Gerador {
             parentes.add(tipoAtributo);
         }
 
+    }
+
+    private FileWriter createFileWriter(DinoProject dinoProject1, String fileName, String folderName) throws IOException {
+        File folder = new File(dinoProject1.getDestinationFolder() + "/" + dinoProject1.name + "/" + folderName + "/");
+        folder.mkdirs();
+        final File file = new File(folder, fileName);
+        dots.add(file.getAbsolutePath());
+        FileWriter fw = new FileWriter(file, false);
+        return fw;
+    }
+
+    private Set<String> createClassLoader(DinoProject dinoProject1) {
+        Set<String> classFolders = new HashSet<>();
+        for (File classFolder : dinoProject1.getClassFolders()) {
+            final Set<File> possilbeClassFIles = procuraArquivosRecursivamente(classFolder, "class");
+            for (File f : possilbeClassFIles) {
+                String absolutePath = f.getAbsolutePath();
+                String replaced = dinoProject1.filtrosParaElementos.replaceAll("\\.", "/");
+                int pos = absolutePath.indexOf(replaced);
+                if (pos >= 0) {
+                    classFolders.add(absolutePath.substring(0, pos));
+                }
+            }
+        }
+        try {
+            final List<File> elements = new ArrayList<File>();
+            for (File jarFolder : dinoProject1.getJarFolders()) {
+                elements.addAll(procuraArquivosRecursivamente(jarFolder, "jar"));
+            }
+            for (String ca : classFolders) {
+                elements.add(new File(ca));
+            }
+            URL[] runtimeUrls = new URL[elements.size()];
+            for (int i = 0; i < elements.size(); i++) {
+                URL url = elements.get(i).toURI().toURL();
+                runtimeUrls[i] = url;
+            }
+            this.dinoProject.classLoader = new URLClassLoader(runtimeUrls, Thread.currentThread().getContextClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return classFolders;
     }
 
 }

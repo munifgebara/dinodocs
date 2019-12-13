@@ -1,6 +1,8 @@
 package br.com.munif.tools.dinodocs;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.File;
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -11,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DinoProject {
+public class DinoProject implements Serializable {
 
-    public String name;
+    public String name = "projeto";
 
     private String destinationFolder = "/home/munif/dinodocs/";
 
@@ -23,26 +25,33 @@ public class DinoProject {
 
     private List<Class> classes = new ArrayList<Class>();
 
+    private List<String> interestClasses = new ArrayList<>();
+
     public String filtrosParaElementos = "br.com";
 
+    @JsonIgnore
     public URLClassLoader classLoader;
 
+    @JsonIgnore
     public HashSet<Class> entidades = new HashSet<>();
 
+    @JsonIgnore
     public Map<Package, Set<Class>> packages = new HashMap<Package, Set<Class>>();
 
+    @JsonIgnore
     public Map<Package, Set<String>> links = new HashMap<Package, Set<String>>();
 
+    @JsonIgnore
     public Map<Class, Set<Class>> annotadeds = new HashMap<Class, Set<Class>>();
 
     public DinoProject() {
-        annotadeds.put(javax.persistence.Entity.class, new HashSet<Class>());
-        annotadeds.put(org.springframework.web.bind.annotation.RestController.class, new HashSet<Class>());
-        annotadeds.put(org.springframework.stereotype.Service.class, new HashSet<Class>());
-        annotadeds.put(org.springframework.stereotype.Component.class, new HashSet<Class>());;
-        annotadeds.put(org.springframework.stereotype.Repository.class, new HashSet<Class>());;
-        annotadeds.put(org.springframework.stereotype.Controller.class, new HashSet<Class>());;
-        annotadeds.put(org.springframework.stereotype.Indexed.class, new HashSet<Class>());;
+//        annotadeds.put(javax.persistence.Entity.class, new HashSet<Class>());
+          annotadeds.put(org.springframework.web.bind.annotation.RestController.class, new HashSet<Class>());
+//        annotadeds.put(org.springframework.stereotype.Service.class, new HashSet<Class>());
+//        annotadeds.put(org.springframework.stereotype.Component.class, new HashSet<Class>());;
+//        annotadeds.put(org.springframework.stereotype.Repository.class, new HashSet<Class>());;
+//        annotadeds.put(org.springframework.stereotype.Controller.class, new HashSet<Class>());;
+//        annotadeds.put(org.springframework.stereotype.Indexed.class, new HashSet<Class>());;
     }
 
     public boolean addJarFolder(String folder) {
@@ -73,22 +82,6 @@ public class DinoProject {
         return false;
     }
 
-    public String getNome() {
-        return name;
-    }
-
-    public List<File> getJarFolders() {
-        return jarFolders;
-    }
-
-    public List<File> getClassFolders() {
-        return classFolders;
-    }
-
-    public List<Class> getClasses() {
-        return classes;
-    }
-
     public String getName() {
         return name;
     }
@@ -103,6 +96,38 @@ public class DinoProject {
 
     public void setDestinationFolder(String destinationFolder) {
         this.destinationFolder = destinationFolder;
+    }
+
+    public List<File> getJarFolders() {
+        return jarFolders;
+    }
+
+    public void setJarFolders(List<File> jarFolders) {
+        this.jarFolders = jarFolders;
+    }
+
+    public List<File> getClassFolders() {
+        return classFolders;
+    }
+
+    public void setClassFolders(List<File> classFolders) {
+        this.classFolders = classFolders;
+    }
+
+    public List<Class> getClasses() {
+        return classes;
+    }
+
+    public void setClasses(List<Class> classes) {
+        this.classes = classes;
+    }
+
+    public String getFiltrosParaElementos() {
+        return filtrosParaElementos;
+    }
+
+    public void setFiltrosParaElementos(String filtrosParaElementos) {
+        this.filtrosParaElementos = filtrosParaElementos;
     }
 
     public URLClassLoader getClassLoader() {
@@ -145,17 +170,17 @@ public class DinoProject {
         this.annotadeds = annotadeds;
     }
 
-    public String getFiltrosParaElementos() {
-        return filtrosParaElementos;
+    public List<String> getInterestClasses() {
+        return interestClasses;
     }
 
-    public void setFiltrosParaElementos(String filtrosParaElementos) {
-        this.filtrosParaElementos = filtrosParaElementos;
+    public void setInterestClasses(List<String> interestClasses) {
+        this.interestClasses = interestClasses;
     }
 
     @Override
     public String toString() {
-        return "DinoProject{\n" + "name=" + name + ",\n destinationFolder=" + destinationFolder + ",\n jarFolders=" + jarFolders + ",\n classFolders=" + classFolders + ",\n classes=" + classes + ",\n filtrosParaElementos=" + filtrosParaElementos + ",\n classLoader=" + classLoader + ",\n entidades=" + entidades + ",\n packages=" + packages + ",\n links=" + links + ",\n annotadeds=" + annotadeds + '}';
+        return "DinoProject{" + "name=" + name + ", destinationFolder=" + destinationFolder + ", jarFolders=" + jarFolders + ", classFolders=" + classFolders + ", classes=" + classes + ", interestClasses=" + interestClasses + ", filtrosParaElementos=" + filtrosParaElementos + ", classLoader=" + classLoader + ", entidades=" + entidades + ", packages=" + packages + ", links=" + links + ", annotadeds=" + annotadeds + '}';
     }
 
 }
