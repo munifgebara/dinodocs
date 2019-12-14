@@ -20,7 +20,17 @@ public class App {
         //writeJson(dinoProject, fileName);
         DinoProject readJson = readJson(fileName);
 
-        Gerador gerador = new Gerador(readJson);
+     //   Gerador gerador = new Gerador(readJson);
+        try {
+			SVGAdapter adapter=new SVGAdapter(readJson);
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        //String s=svg.getEntitesSVG();
+        //System.out.prinln (s);
     }
 
     private static DinoProject readJson(String fileName) {
@@ -50,8 +60,3 @@ public class App {
 
 }
 
-///home/munif/tomcat-build-libs /mnt/linuxdata/projetos/apache-tomcat-8.5.49-src/output/classes/org/apache/tomcat org.apache  ApacheTomcat
-///home/munif/objective/docs/dewa-4.1.6/WEB-INF /home/munif/objective/docs/dewa-4.1.6/WEB-INF br.com Teste
-
-
-///home/munif/projetos/lib /home/munif/projetos/vicente br.com.munif Vicente
