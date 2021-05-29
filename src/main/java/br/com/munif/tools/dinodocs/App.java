@@ -23,14 +23,15 @@ public class App {
         readJson.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/kotlin/main");
         readJson.addJarFolder("/home/mgebara/particular/pix-notification-service-0.0.1/BOOT-INF/lib");
         try {
-            SVGAdapter adapter = new SVGAdapter(readJson);
-            adapter.escreve();
+            DinoAnalyzer dinoAnalyzer = new DinoAnalyzer(readJson);
 
         } catch (IOException e) {
 
             e.printStackTrace();
         }
         writeJson(readJson, fileName);
+
+
 
     }
 
@@ -39,7 +40,7 @@ public class App {
         try (FileReader reader = new FileReader(fileName)) {
             DinoProject readValue = mapper.readValue(new File(fileName), DinoProject.class);
 
-            return d;
+            return readValue;
         } catch (Throwable e) {
             e.printStackTrace();
         }

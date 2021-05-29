@@ -5,13 +5,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class DinoProject implements Serializable {
 
@@ -32,17 +26,15 @@ public class DinoProject implements Serializable {
 	@JsonIgnore
 	public URLClassLoader classLoader;
 
-	@JsonIgnore
-	public HashSet<Class> entidades = new HashSet<>();
-
-	@JsonIgnore
 	public Map<Package, Set<Class>> packages = new HashMap<Package, Set<Class>>();
 
-	@JsonIgnore
 	public Map<Package, Set<String>> links = new HashMap<Package, Set<String>>();
 
-	@JsonIgnore
 	public Map<Class<?extends Annotation> , Set<Class<?>>> annotadeds = new HashMap<>();
+
+	public Set<Inheritance> inheritances = new HashSet<>();
+
+	public Set<String> annotations=new TreeSet<>();
 
 	public DinoProject() {
 		annotadeds.put(javax.persistence.Entity.class, new HashSet<Class<?>>());
@@ -52,7 +44,6 @@ public class DinoProject implements Serializable {
 		annotadeds.put(org.springframework.stereotype.Repository.class, new HashSet<Class<?>>());
 		annotadeds.put(org.springframework.stereotype.Controller.class, new HashSet<Class<?>>());
 		annotadeds.put(org.springframework.stereotype.Indexed.class, new HashSet<Class<?>>());
-
 	}
 
 	public boolean addJarFolder(String folder) {
@@ -83,8 +74,9 @@ public class DinoProject implements Serializable {
 		return false;
 	}
 
-	
-
+	public Set<Inheritance> getInheritances() {
+		return inheritances;
+	}
 
 	/**
 	 * @return the name
@@ -198,19 +190,6 @@ public class DinoProject implements Serializable {
 		this.classLoader = classLoader;
 	}
 
-	/**
-	 * @return the entidades
-	 */
-	public HashSet<Class> getEntidades() {
-		return entidades;
-	}
-
-	/**
-	 * @param entidades the entidades to set
-	 */
-	public void setEntidades(HashSet<Class> entidades) {
-		this.entidades = entidades;
-	}
 
 	/**
 	 * @return the packages
@@ -259,8 +238,11 @@ public class DinoProject implements Serializable {
 		return "DinoProject{" + "name=" + name + ", destinationFolder=" + destinationFolder + ", jarFolders="
 				+ jarFolders + ", classFolders=" + classFolders + ", classes=" + classes + ", interestClasses="
 				+ interestClasses + ", filtrosParaElementos=" + filtrosParaElementos + ", classLoader=" + classLoader
-				+ ", entidades=" + entidades + ", packages=" + packages + ", links=" + links + ", annotadeds="
+				+  ", packages=" + packages + ", links=" + links + ", annotadeds="
 				+ annotadeds + '}';
 	}
 
+	public Set<String> getAnnotations() {
+		return annotations;
+	}
 }
