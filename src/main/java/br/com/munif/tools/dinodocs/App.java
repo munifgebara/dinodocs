@@ -16,28 +16,30 @@ public class App {
     public static void main(String[] args) {
         mapper = new ObjectMapper();
         writer = mapper.setDefaultPrettyPrinter(new DefaultPrettyPrinter()).writerWithDefaultPrettyPrinter();
-        String fileName = "/home/munif/defaultDinDocs.json";
-        //writeJson(dinoProject, fileName);
-        DinoProject readJson = readJson(fileName);
+        String fileName = "/home/mgebara/particular/last.json";
 
-     //   Gerador gerador = new Gerador(readJson);
+        DinoProject readJson = new DinoProject();
+        readJson.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/java/main");
+        readJson.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/kotlin/main");
+        readJson.addJarFolder("/home/mgebara/particular/pix-notification-service-0.0.1/BOOT-INF/lib");
         try {
-			SVGAdapter adapter=new SVGAdapter(readJson);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-        
-        //String s=svg.getEntitesSVG();
-        //System.out.prinln (s);
+            SVGAdapter adapter = new SVGAdapter(readJson);
+            adapter.escreve();
+
+        } catch (IOException e) {
+
+            e.printStackTrace();
+        }
+        writeJson(readJson, fileName);
+
     }
 
     private static DinoProject readJson(String fileName) {
 
         try (FileReader reader = new FileReader(fileName)) {
             DinoProject readValue = mapper.readValue(new File(fileName), DinoProject.class);
-            return readValue;
+
+            return d;
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -49,7 +51,6 @@ public class App {
 
         try (FileWriter file = new FileWriter(fileName)) {
             String s = writer.writeValueAsString(dinoProject);
-            System.out.println(s);
             file.write(s);
             file.flush();
         } catch (IOException e) {
@@ -59,4 +60,3 @@ public class App {
     }
 
 }
-

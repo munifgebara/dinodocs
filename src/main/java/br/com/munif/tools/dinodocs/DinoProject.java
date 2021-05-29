@@ -17,7 +17,7 @@ public class DinoProject implements Serializable {
 
 	public String name = "projeto";
 
-	private String destinationFolder = "/home/munif/dinodocs/";
+	private String destinationFolder = "/home/mgebara/particular/saida";
 
 	private List<File> jarFolders = new ArrayList<File>();
 
@@ -27,7 +27,7 @@ public class DinoProject implements Serializable {
 
 	private List<String> interestClasses = new ArrayList<>();
 
-	public String filtrosParaElementos = "br.com";
+	public String filtrosParaElementos = "br.com.uol";
 
 	@JsonIgnore
 	public URLClassLoader classLoader;
