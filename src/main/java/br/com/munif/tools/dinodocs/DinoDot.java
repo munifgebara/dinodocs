@@ -9,6 +9,13 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import java.util.*;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import net.sourceforge.plantuml.FileFormat;
+import net.sourceforge.plantuml.FileFormatOption;
+import net.sourceforge.plantuml.SourceStringReader;
+import net.sourceforge.plantuml.core.DiagramDescription;
 
 public class DinoDot {
 
@@ -43,9 +50,21 @@ public class DinoDot {
     }
 
     public void annotated() throws MalformedTemplateNameException, ParseException, IOException, TemplateException {
-        Template template = cfg.getTemplate("anotacao.ftl");
-        Writer out = new OutputStreamWriter(System.out);
-        template.process(this.dinoProject, out);
+        StringWriter sw=new StringWriter();
+        Template template = cfg.getTemplate("anotacao.ftl");  
+        template.process(this.dinoProject, sw);
+        
+        Files.write( Paths.get("/home/mgebara/particular/est.plt"), sw.toString().getBytes());
+       
+        SourceStringReader reader = new SourceStringReader(sw.toString());
+        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+        DiagramDescription dd = reader.outputImage(os,new FileFormatOption(FileFormat.SVG));
+        System.out.println(dd.getDescription());
+               // The XML is stored into svg
+        final String out = new String(os.toByteArray(), Charset.forName("UTF-8"));
+    os.close();
+        Files.write( Paths.get("/home/mgebara/particular/est.svg"), out.getBytes());
+
     }
 
 }

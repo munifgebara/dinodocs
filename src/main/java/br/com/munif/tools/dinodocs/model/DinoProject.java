@@ -38,12 +38,12 @@ public class DinoProject implements Serializable {
 
 	public DinoProject() {
 		annotadeds.put(javax.persistence.Entity.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.web.bind.annotation.RestController.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.stereotype.Service.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.stereotype.Component.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.stereotype.Repository.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.stereotype.Controller.class, new HashSet<Class<?>>());
-		annotadeds.put(org.springframework.stereotype.Indexed.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.web.bind.annotation.RestController.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.stereotype.Service.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.stereotype.Component.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.stereotype.Repository.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.stereotype.Controller.class, new HashSet<Class<?>>());
+	//	annotadeds.put(org.springframework.stereotype.Indexed.class, new HashSet<Class<?>>());
 	}
 
 	public boolean addJarFolder(String folder) {
