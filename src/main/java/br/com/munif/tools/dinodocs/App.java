@@ -13,6 +13,7 @@ public class App {
 
     public static ObjectMapper mapper;
     public static ObjectWriter writer;
+    public static DinoProject project;
 
     public static void main(String[] args) {
         mapper = new ObjectMapper();
@@ -20,19 +21,21 @@ public class App {
         String fileName = "/home/mgebara/particular/last.json";
 
         DinoProject dinoProject = new DinoProject();
+        App.project=dinoProject;
         dinoProject.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/java/main");
         dinoProject.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/kotlin/main");
         dinoProject.addJarFolder("/home/mgebara/particular/pix-notification-service-0.0.1/BOOT-INF/lib");
         try {
             DinoAnalyzer dinoAnalyzer = new DinoAnalyzer(dinoProject);
             writeJson(dinoProject, fileName);
-            DinoDot dinoDot = new DinoDot(dinoProject);
-            dinoDot.annotated();
+            DinoFreemaker dinoDot = new DinoFreemaker(dinoProject);
+            dinoDot.createClassDiagram();
 
         } catch (Exception e) {
 
             e.printStackTrace();
         }
+        
 
     }
 

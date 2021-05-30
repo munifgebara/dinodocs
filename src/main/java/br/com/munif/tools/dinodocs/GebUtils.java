@@ -19,7 +19,7 @@ public class GebUtils {
 
 	public static List<Field> getAllFields(Class<?> c) {
 		ArrayList<Field> arrayList = new ArrayList<Field>();
-		if (c.getSuperclass() != Object.class) {
+		if (!c.isEnum()&& c.getSuperclass() != Object.class) {
 			arrayList.addAll(getAllFields(c.getSuperclass()));
 		}
 		arrayList.addAll(Arrays.asList(c.getDeclaredFields()));
