@@ -42,7 +42,16 @@
             <artifactId>ant</artifactId>
             <version>1.8.2</version>
         </dependency>
-        
+        <!--
+        Attention: Be sure nothing pulls in an old dependency with groupId
+        "freemarker" (without the "org."), because then you will end up with
+        two freemarker.jar-s and unpredictable behavior!
+        -->
+        <dependency>
+            <groupId>org.freemarker</groupId>
+            <artifactId>freemarker</artifactId>
+            <version>2.3.30</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>

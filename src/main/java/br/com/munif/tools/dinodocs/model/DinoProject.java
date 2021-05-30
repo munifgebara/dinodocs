@@ -1,4 +1,4 @@
-package br.com.munif.tools.dinodocs;
+package br.com.munif.tools.dinodocs.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.File;

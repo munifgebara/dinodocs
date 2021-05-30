@@ -1,5 +1,8 @@
 package br.com.munif.tools.dinodocs;
 
+import br.com.munif.tools.dinodocs.model.DinoProject;
+import br.com.munif.tools.dinodocs.model.Inheritance;
+
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;

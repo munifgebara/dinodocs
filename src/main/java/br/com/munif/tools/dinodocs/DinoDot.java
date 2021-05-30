@@ -1,92 +1,51 @@
 package br.com.munif.tools.dinodocs;
 
+import br.com.munif.tools.dinodocs.model.DinoProject;
+import freemarker.core.ParseException;
+import freemarker.template.Configuration;
+import freemarker.template.MalformedTemplateNameException;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import java.util.*;
+import java.io.*;
+
 public class DinoDot {
-    /*
 
-	private void writeHeader(Writer fileWriter) throws IOException {
-        fileWriter.write("//Gerado automaticamente\n\n"
-                + ""
-                + "digraph G{\n"
-                + "fontname = \"Bitstream Vera Sans\"\n"
-                + "fontsize = 8\n\n"
-                + "node [\n"
-                + "        fontname = \"Bitstream Vera Sans\"\n"
-                + "        fontsize = 8\n"
-                + "        shape = \"record\"\n"
-                + "]\n\n"
-                + "edge [\n"
-                + "        fontname = \"Bitstream Vera Sans\"\n"
-                + "        fontsize = 8\n"
-                + "]\n\n");
+    DinoProject dinoProject;
+
+    Configuration cfg;
+
+    public DinoDot(DinoProject dinoProject) throws IOException {
+        this.dinoProject = dinoProject;
+        cfg = new Configuration(Configuration.VERSION_2_3_29);
+
+        cfg.setClassForTemplateLoading(this.getClass(), "/templates");
+
+        // From here we will set the settings recommended for new projects. These
+        // aren't the defaults for backward compatibilty.
+        // Set the preferred charset template files are stored in. UTF-8 is
+        // a good choice in most applications:
+        cfg.setDefaultEncoding("UTF-8");
+
+        // Sets how errors will appear.
+        // During web page *development* TemplateExceptionHandler.HTML_DEBUG_HANDLER is better.
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+
+        // Don't log exceptions inside FreeMarker that it will thrown at you anyway:
+        cfg.setLogTemplateExceptions(false);
+
+        // Wrap unchecked exceptions thrown during template processing into TemplateException-s:
+        cfg.setWrapUncheckedExceptions(true);
+
+        // Do not fall back to higher scopes when reading a null loop variable:
+        cfg.setFallbackOnNullLoopVariable(false);
     }
 
-
-    private List<String> createEntity(Class be, StringWriter fw) throws Exception {
-        List<String> associations = new ArrayList<String>();
-        if (generated.contains(be)) {
-            return associations;
-        }
-        generated.add(be);
-        Class entity = be.getClass();
-
-        String cor = "";
-        fw.write(be.getId() + " [" + cor + "label = \"{" + entity.getSimpleName() + " (" + be.getId() + ") |");
-        Field[] attrs = entity.getDeclaredFields();
-
-        for (Field f : attrs) {
-            if ((f.getModifiers() & Modifier.STATIC) != 0) {
-                continue;
-            }
-            f.setAccessible(true);
-            String attrName = f.getName();
-            if (f.getType().equals(List.class) || f.getType().equals(Set.class) || f.getType().equals(Map.class)) {
-                if (f.isAnnotationPresent(ManyToMany.class) || f.isAnnotationPresent(OneToMany.class)) {
-                    Hibernate.initialize(f.get(be));
-                    Collection<BaseEntity> others = ((Collection) f.get(be));
-                    if (others != null) {
-                        for (BaseEntity other : others) {
-                            StringWriter sw = new StringWriter();
-                            associations.addAll(createEntity(other, sw));
-                            associations.add(sw.toString());
-                            associations.add("edge [arrowhead = \"none\" ] " + be.getId() + " -> " + other.getId() + " [label = \"" + attrName + "\"]");
-                        }
-                    }
-                }
-
-            } else if (f.isAnnotationPresent(ManyToOne.class) || f.isAnnotationPresent(OneToOne.class)) {
-                BaseEntity other = ((BaseEntity) f.get(be));
-                if (other != null) {
-                    StringWriter sw = new StringWriter();
-                    associations.addAll(createEntity(other, sw));
-                    associations.add(sw.toString());
-                    associations.add("edge [arrowhead = \"none\"  ] " + be.getId() + " -> " + other.getId() + " [label = \"" + attrName + "\"]");
-                }
-            } else {
-                String vString = "" + f.get(be);
-                vString = vString.substring(0, Math.min(vString.length(), 15));
-                fw.write(attrName + ":" + vString + "\\l");
-            }
-        }
-        fw.write("}\"]\n");
-        return associations;
+    public void annotated() throws MalformedTemplateNameException, ParseException, IOException, TemplateException {
+        Template template = cfg.getTemplate("anotacao.ftl");
+        Writer out = new OutputStreamWriter(System.out);
+        template.process(this.dinoProject, out);
     }
-
-
-
-	public void escreve() throws IOException{
-		StringWriter fw = new StringWriter();
-
-		this.writeHeader(fw);
-
-		System.out.println(fw.toString());
-
-
-
-
-	}
-
-
-     */
-
 
 }

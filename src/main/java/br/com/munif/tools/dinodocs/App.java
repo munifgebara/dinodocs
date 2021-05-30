@@ -1,5 +1,6 @@
 package br.com.munif.tools.dinodocs;
 
+import br.com.munif.tools.dinodocs.model.DinoProject;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -18,20 +19,20 @@ public class App {
         writer = mapper.setDefaultPrettyPrinter(new DefaultPrettyPrinter()).writerWithDefaultPrettyPrinter();
         String fileName = "/home/mgebara/particular/last.json";
 
-        DinoProject readJson = new DinoProject();
-        readJson.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/java/main");
-        readJson.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/kotlin/main");
-        readJson.addJarFolder("/home/mgebara/particular/pix-notification-service-0.0.1/BOOT-INF/lib");
+        DinoProject dinoProject = new DinoProject();
+        dinoProject.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/java/main");
+        dinoProject.addClassFolder("/home/mgebara/pags/pix-notification-service/build/classes/kotlin/main");
+        dinoProject.addJarFolder("/home/mgebara/particular/pix-notification-service-0.0.1/BOOT-INF/lib");
         try {
-            DinoAnalyzer dinoAnalyzer = new DinoAnalyzer(readJson);
+            DinoAnalyzer dinoAnalyzer = new DinoAnalyzer(dinoProject);
+            writeJson(dinoProject, fileName);
+            DinoDot dinoDot = new DinoDot(dinoProject);
+            dinoDot.annotated();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
 
             e.printStackTrace();
         }
-        writeJson(readJson, fileName);
-
-
 
     }
 

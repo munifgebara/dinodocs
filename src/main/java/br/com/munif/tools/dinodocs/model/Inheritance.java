@@ -1,4 +1,4 @@
-package br.com.munif.tools.dinodocs;
+package br.com.munif.tools.dinodocs.model;
 
 import java.util.Objects;
 
